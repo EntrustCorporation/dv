@@ -39,7 +39,7 @@ func main() {
 
 	offset := 0
 	for {
-		domains, err := e.GetDomains(offset, 10, &expiry)
+		domains, err := e.GetDomains(offset, 250, &expiry)
 		if err != nil {
 			log.Fatal(err)
 		}
