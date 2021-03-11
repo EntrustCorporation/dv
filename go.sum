@@ -149,8 +149,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/digitorus/entrust v0.0.0-20210311090410-c18455d75837 h1:pdqyUk449bGkChUR9z5F86Uay2PQI7JL40uhEoC/B+g=
-github.com/digitorus/entrust v0.0.0-20210311090410-c18455d75837/go.mod h1:z24Gtq79j2h0Y8WGBGKHZkljbD2Rhhg3cQeoPvZ7qTg=
+github.com/digitorus/entrust v0.0.0-20210311190240-0904348729b0 h1:KdvrbREGSBwa+mBrMC+tVwss8gmROg1yne0vfQ+DTZk=
+github.com/digitorus/entrust v0.0.0-20210311190240-0904348729b0/go.mod h1:z24Gtq79j2h0Y8WGBGKHZkljbD2Rhhg3cQeoPvZ7qTg=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
