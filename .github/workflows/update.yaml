@@ -1,4 +1,4 @@
-name: Update
+name: Update DNS providers
 
 on:
   workflow_dispatch:
@@ -8,14 +8,15 @@ on:
 
 jobs:
   update:
+    name: Update
     runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v2
 
-      - name: Update providers
+      - name: Update DNS providers
         run: |
-          ./udate-providers.sh
+          ./update-providers.sh
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
