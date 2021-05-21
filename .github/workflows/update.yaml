@@ -1,0 +1,24 @@
+name: Update
+
+on:
+  workflow_dispatch:
+    
+  schedule:
+    - cron:  '0 7 * * 3'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update providers
+        run: |
+          ./udate-providers.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: Update DNS Providers
+          labels: dns, automated pr
