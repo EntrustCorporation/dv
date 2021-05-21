@@ -1,7 +1,7 @@
 #!/bin/sh
 
 rm -rf ./providers
-git clone --depth 1 git@github.com:go-acme/lego.git /tmp/lego
+git clone --depth 1 https://github.com/go-acme/lego.git /tmp/lego
 cp -r /tmp/lego/providers/dns ./providers
 
 cp /tmp/lego/challenge/dns01/dns_challenge_manual.go ./dns01
