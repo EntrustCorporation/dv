@@ -20,3 +20,6 @@ echo ")" >> go.mod
 rm -rf /tmp/lego
 
 go mod tidy
+
+# Ensure we use the latest Entrust API client
+go get -u github.com/digitorus/entrust

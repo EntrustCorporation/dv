@@ -46,6 +46,7 @@ require (
 	github.com/vultr/govultr/v2 v2.4.0
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.4.4
 	gopkg.in/square/go-jose.v2 v2.5.1
