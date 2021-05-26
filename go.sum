@@ -106,8 +106,8 @@ github.com/deepmap/oapi-codegen v1.3.11/go.mod h1:suMvK7+rKlx3+tpa8ByptmvoXbAV70
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/digitorus/entrust v0.0.0-20210526102725-bb29ab062ebd h1:LOsE6OEN1rVp9/2x2Fo8SBiBJIr0VWWdiSNCVa0FmBA=
-github.com/digitorus/entrust v0.0.0-20210526102725-bb29ab062ebd/go.mod h1:z24Gtq79j2h0Y8WGBGKHZkljbD2Rhhg3cQeoPvZ7qTg=
+github.com/digitorus/entrust v0.0.0-20210526111146-872cd36116f8 h1:i3/YltX/ezOc454qV9hrM+osKTOKHPm0ARZGSV5uoT8=
+github.com/digitorus/entrust v0.0.0-20210526111146-872cd36116f8/go.mod h1:z24Gtq79j2h0Y8WGBGKHZkljbD2Rhhg3cQeoPvZ7qTg=
 github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TRo4=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dnaeon/go-vcr v1.0.1/go.mod h1:aBB1+wY4s93YsC3HHjMBMrwTj2R9FHDzUr9KyGc8n1E=
