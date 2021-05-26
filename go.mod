@@ -75,3 +75,10 @@ require (
 
 // Azure SDK (autorest) depends on an old version witch pushes a depricated messages
 replace contrib.go.opencensus.io/exporter/ocagent => contrib.go.opencensus.io/exporter/ocagent v0.7.0
+
+require (
+	github.com/nrdcg/porkbun v0.1.1
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.7.0.20210127161313-bd30bebeac4f
+	github.com/stretchr/objx v0.3.0 // indirect
+	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
+)

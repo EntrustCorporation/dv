@@ -70,6 +70,7 @@ import (
 	"github.com/digitorus/dv/providers/otc"
 	"github.com/digitorus/dv/providers/ovh"
 	"github.com/digitorus/dv/providers/pdns"
+	"github.com/digitorus/dv/providers/porkbun"
 	"github.com/digitorus/dv/providers/rackspace"
 	"github.com/digitorus/dv/providers/regru"
 	"github.com/digitorus/dv/providers/rfc2136"
@@ -79,12 +80,15 @@ import (
 	"github.com/digitorus/dv/providers/scaleway"
 	"github.com/digitorus/dv/providers/selectel"
 	"github.com/digitorus/dv/providers/servercow"
+	"github.com/digitorus/dv/providers/sonic"
 	"github.com/digitorus/dv/providers/stackpath"
 	"github.com/digitorus/dv/providers/transip"
 	"github.com/digitorus/dv/providers/vegadns"
 	"github.com/digitorus/dv/providers/versio"
+	"github.com/digitorus/dv/providers/vinyldns"
 	"github.com/digitorus/dv/providers/vscale"
 	"github.com/digitorus/dv/providers/vultr"
+	"github.com/digitorus/dv/providers/wedos"
 	"github.com/digitorus/dv/providers/yandex"
 	"github.com/digitorus/dv/providers/zoneee"
 	"github.com/digitorus/dv/providers/zonomi"
@@ -225,6 +229,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ovh.NewDNSProvider()
 	case "pdns":
 		return pdns.NewDNSProvider()
+	case "porkbun":
+		return porkbun.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "regru":
@@ -243,6 +249,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return selectel.NewDNSProvider()
 	case "servercow":
 		return servercow.NewDNSProvider()
+	case "sonic":
+		return sonic.NewDNSProvider()
 	case "stackpath":
 		return stackpath.NewDNSProvider()
 	case "transip":
@@ -251,10 +259,14 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vegadns.NewDNSProvider()
 	case "versio":
 		return versio.NewDNSProvider()
+	case "vinyldns":
+		return vinyldns.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
 	case "vscale":
 		return vscale.NewDNSProvider()
+	case "wedos":
+		return wedos.NewDNSProvider()
 	case "yandex":
 		return yandex.NewDNSProvider()
 	case "zoneee":
