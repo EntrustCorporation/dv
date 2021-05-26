@@ -1,6 +1,6 @@
 module github.com/digitorus/dv
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go v0.54.0
@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/cloudflare/cloudflare-go v0.14.0
 	github.com/cpu/goacmedns v0.1.1
-	github.com/digitorus/entrust v0.0.0-20210520075907-d6af2ef03042
+	github.com/digitorus/entrust v0.0.0-20210526102725-bb29ab062ebd
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.46.0
 	github.com/go-acme/lego/v4 v4.3.1
