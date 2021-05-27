@@ -44,6 +44,7 @@ require (
 	github.com/transip/gotransip/v6 v6.6.0
 	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
 	github.com/vultr/govultr/v2 v2.4.0
+	github.com/weppos/publicsuffix-go v0.15.0
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect

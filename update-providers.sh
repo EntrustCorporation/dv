@@ -21,5 +21,6 @@ rm -rf /tmp/lego
 
 go mod tidy
 
-# Ensure we use the latest Entrust API client
+# Ensure we use the latest Entrust API client and Public Suffix List
 go get -u github.com/digitorus/entrust
+go get -u github.com/weppos/publicsuffix-go

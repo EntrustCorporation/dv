@@ -7,6 +7,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/weppos/publicsuffix-go/publicsuffix"
 
 	dns "github.com/digitorus/dv/providers"
 	"github.com/digitorus/entrust"
@@ -50,13 +51,18 @@ func main() {
 
 		for _, domain := range domains.Domains {
 			log.WithFields(log.Fields{"domain": domain.DomainName}).Info("Processing")
+			_, err := publicsuffix.DomainFromListWithOptions(publicsuffix.DefaultList, domain.DomainName, &publicsuffix.FindOptions{IgnorePrivate: true})
+			if err != nil {
+				log.WithFields(log.Fields{"domain": domain.DomainName}).Info("Skipping domain as it does not end with a Public Suffix")
+				continue
+			}
 
 			switch domain.VerificationStatus {
 			case "RE_VERIFICATION", "INITIAL_VERIFICATION":
 				// Pending verification, check if DNS is configured correctly
 				break
-			case "CANCELLED":
-				// This domain has been deleted, don't try to renew it
+			case "CANCELLED", "DECLINED":
+				// This domain has been deleted or is not invalid, don't try to renew it
 				continue
 			default:
 				// Resubmit the domain for validation
@@ -92,6 +98,11 @@ func main() {
 }
 
 func renewDomainValidation(domain *entrust.Domain) {
+	if domain == nil || domain.DNSMethod == nil {
+		log.Error("Renew domain validation failed: invalid domain or method")
+		return
+	}
+
 	// A default DNS provider can be set using the environment variable DNS_PROVIDER
 	// and a domain specific provider can be set using the environment variable
 	// DNS_PROVIDER_example_com.
