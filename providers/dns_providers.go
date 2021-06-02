@@ -47,6 +47,7 @@ import (
 	"github.com/digitorus/dv/providers/hurricane"
 	"github.com/digitorus/dv/providers/hyperone"
 	"github.com/digitorus/dv/providers/iij"
+	"github.com/digitorus/dv/providers/infoblox"
 	"github.com/digitorus/dv/providers/infomaniak"
 	"github.com/digitorus/dv/providers/inwx"
 	"github.com/digitorus/dv/providers/ionos"
@@ -181,6 +182,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hyperone.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
+	case "infoblox":
+		return infoblox.NewDNSProvider()
 	case "infomaniak":
 		return infomaniak.NewDNSProvider()
 	case "inwx":

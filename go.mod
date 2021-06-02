@@ -1,6 +1,6 @@
 module github.com/digitorus/dv
 
-go 1.16
+go 1.15
 
 require (
 	cloud.google.com/go v0.54.0
@@ -23,6 +23,7 @@ require (
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
+	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.25.3
 	github.com/liquidweb/liquidweb-go v1.6.3
@@ -47,7 +48,8 @@ require (
 	github.com/weppos/publicsuffix-go v0.15.0
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
+	golang.org/x/sys v0.0.0-20210601080250-7ecdf8ef093b // indirect
+	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.4.4
 	gopkg.in/square/go-jose.v2 v2.5.1
