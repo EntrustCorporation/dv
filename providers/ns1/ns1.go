@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"gopkg.in/ns1/ns1-go.v2/rest"

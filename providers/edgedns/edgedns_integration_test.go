@@ -6,7 +6,7 @@ import (
 	"time"
 
 	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

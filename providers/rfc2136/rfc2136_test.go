@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

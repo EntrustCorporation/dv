@@ -15,14 +15,15 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/cloudflare/cloudflare-go v0.14.0
 	github.com/cpu/goacmedns v0.1.1
-	github.com/entrustcorporation/entrust v0.0.0-20210526111146-872cd36116f8
 	github.com/dnsimple/dnsimple-go v0.63.0
+	github.com/entrustcorporation/entrust v0.0.0-20210603121738-dd6b8ce8f5a3
 	github.com/exoscale/egoscale v0.46.0
 	github.com/go-acme/lego/v4 v4.3.1
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
+	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.25.3
 	github.com/liquidweb/liquidweb-go v1.6.3
@@ -47,7 +48,8 @@ require (
 	github.com/weppos/publicsuffix-go v0.15.0
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
+	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
+	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.4.4
 	gopkg.in/square/go-jose.v2 v2.5.1

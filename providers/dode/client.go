@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 )
 
 type apiResponse struct {

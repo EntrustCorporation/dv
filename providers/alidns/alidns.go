@@ -11,7 +11,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"golang.org/x/net/idna"
 )

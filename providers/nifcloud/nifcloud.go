@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/digitorus/dv/providers/nifcloud/internal"
+	"github.com/entrustcorporation/dv/providers/nifcloud/internal"
 )
 
 // Environment variables names.

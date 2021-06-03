@@ -1,15 +1,16 @@
 package hurricane
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/digitorus/dv/providers/hurricane/internal"
+	"github.com/entrustcorporation/dv/providers/hurricane/internal"
 )
 
 // Environment variables names.
@@ -87,7 +88,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	_, txtRecord := dns01.GetRecord(domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(domain, txtRecord)
+	err := d.client.UpdateTxtRecord(context.Background(), domain, txtRecord)
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}
@@ -97,7 +98,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp updates the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, _ string) error {
-	err := d.client.UpdateTxtRecord(domain, ".")
+	err := d.client.UpdateTxtRecord(context.Background(), domain, ".")
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}

@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/digitorus/dv/providers/netlify/internal"
+	"github.com/entrustcorporation/dv/providers/netlify/internal"
 )
 
 // Environment variables names.

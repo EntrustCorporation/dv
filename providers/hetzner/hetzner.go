@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/digitorus/dv/providers/hetzner/internal"
+	"github.com/entrustcorporation/dv/providers/hetzner/internal"
 )
 
 const minTTL = 600

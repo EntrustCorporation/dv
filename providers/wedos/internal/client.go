@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 )
 
 const baseURL = "https://api.wedos.com/wapi/json"

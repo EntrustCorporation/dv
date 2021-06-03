@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 

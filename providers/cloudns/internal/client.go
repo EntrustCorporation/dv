@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 )
 
 const defaultBaseURL = "https://api.cloudns.net/dns/"

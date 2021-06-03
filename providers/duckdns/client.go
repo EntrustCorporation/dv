@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/miekg/dns"
 )
 

@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/cloudflare/cloudflare-go"
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 )
 
 type metaClient struct {

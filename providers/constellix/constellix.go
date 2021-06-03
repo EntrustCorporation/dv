@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/digitorus/dv/providers/constellix/internal"
+	"github.com/entrustcorporation/dv/providers/constellix/internal"
 )
 
 // Environment variables names.

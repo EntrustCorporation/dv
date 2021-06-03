@@ -10,8 +10,9 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
-	"github.com/digitorus/dv/dns01"
+	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/log"
 )
 
@@ -27,7 +28,7 @@ func New(apiEndpoint, apiToken string) *Client {
 	return &Client{
 		apiEndpoint: apiEndpoint,
 		apiToken:    apiToken,
-		HTTPClient:  &http.Client{},
+		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
 	}
 }
 

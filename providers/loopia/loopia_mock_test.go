@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/digitorus/dv/providers/loopia/internal"
+	"github.com/entrustcorporation/dv/providers/loopia/internal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
