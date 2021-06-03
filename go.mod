@@ -1,4 +1,4 @@
-module github.com/digitorus/dv
+module github.com/entrustcorporation/dv
 
 go 1.16
 
@@ -15,7 +15,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/cloudflare/cloudflare-go v0.14.0
 	github.com/cpu/goacmedns v0.1.1
-	github.com/digitorus/entrust v0.0.0-20210526111146-872cd36116f8
+	github.com/entrustcorporation/entrust v0.0.0-20210526111146-872cd36116f8
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.46.0
 	github.com/go-acme/lego/v4 v4.3.1

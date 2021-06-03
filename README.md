@@ -55,6 +55,6 @@ docker run --name dvrenewal --rm \
     -e ENTRUST_API_USERNAME \
     -e ENTRUST_API_PASSWORD \
     -e DURATION_BEFORE_EXPIRY \
-    ghcr.io/digitorus/dv/dv:1.0.3
+    ghcr.io/entrustcorporation/dv/dv:1.0.3
 
 ```

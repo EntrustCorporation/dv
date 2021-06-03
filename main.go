@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 
-	dns "github.com/digitorus/dv/providers"
-	"github.com/digitorus/entrust"
+	dns "github.com/entrustcorporation/dv/providers"
+	"github.com/entrustcorporation/entrust"
 )
 
 func main() {
