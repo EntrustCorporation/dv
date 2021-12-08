@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -210,7 +210,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 
 func TestClient_rpcCall_404(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
+		_, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -243,7 +243,7 @@ func TestClient_rpcCall_404(t *testing.T) {
 
 func TestClient_rpcCall_RPCError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
+		_, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -304,13 +304,13 @@ func TestUnmarshallFaultyRecordObject(t *testing.T) {
 func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 	t.Helper()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "text/xml" {
 			http.Error(w, fmt.Sprintf("invalid content type: %s", r.Header.Get("Content-Type")), http.StatusBadRequest)
 			return
 		}
 
-		req, err := ioutil.ReadAll(r.Body)
+		req, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -327,8 +327,9 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}))
+	})
 
+	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
 	return server.URL

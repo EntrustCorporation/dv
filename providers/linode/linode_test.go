@@ -19,8 +19,10 @@ type MockResponseMap map[string]interface{}
 
 var envTest = tester.NewEnvTest(EnvToken)
 
-func newMockServer(responses MockResponseMap) *httptest.Server {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func setupTest(t *testing.T, responses MockResponseMap) string {
+	t.Helper()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Ensure that we support the requested action.
 		action := r.Method + ":" + r.URL.Path
 		resp, ok := responses[action]
@@ -50,11 +52,16 @@ func newMockServer(responses MockResponseMap) *httptest.Server {
 		_, err = w.Write(rawResponse)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-	}))
+	})
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
 
 	time.Sleep(100 * time.Millisecond)
-	return srv
+
+	return server.URL
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -207,11 +214,10 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := newMockServer(test.mockResponses)
-			defer server.Close()
+			serverURL := setupTest(t, test.mockResponses)
 
 			assert.NotNil(t, p.client)
-			p.client.SetBaseURL(server.URL)
+			p.client.SetBaseURL(serverURL)
 
 			err = p.Present(domain, "", keyAuth)
 			if test.expectedError == "" {
@@ -323,10 +329,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := newMockServer(test.mockResponses)
-			defer server.Close()
+			serverURL := setupTest(t, test.mockResponses)
 
-			p.client.SetBaseURL(server.URL)
+			p.client.SetBaseURL(serverURL)
 
 			err = p.CleanUp(domain, "", keyAuth)
 			if test.expectedError == "" {

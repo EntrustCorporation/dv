@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -21,17 +21,20 @@ var envTest = tester.NewEnvTest(
 	"NETCUP_API_PASSWORD").
 	WithDomain("NETCUP_DOMAIN")
 
-func setupClientTest() (*Client, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client, err := NewClient("a", "b", "c")
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
+
+	client.HTTPClient = server.Client()
 	client.BaseURL = server.URL
 
-	return client, handler, server.Close
+	return client, mux
 }
 
 func TestGetDNSRecordIdx(t *testing.T) {
@@ -137,17 +140,18 @@ func TestGetDNSRecordIdx(t *testing.T) {
 }
 
 func TestClient_Login(t *testing.T) {
-	client, mux, tearDown := setupClientTest()
-	defer tearDown()
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"login","param":{"customernumber":"a","apikey":"b","apipassword":"c"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -167,6 +171,7 @@ func TestClient_Login(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -204,6 +209,7 @@ func TestClient_Login_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -224,6 +230,7 @@ func TestClient_Login_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -234,8 +241,7 @@ func TestClient_Login_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux, tearDown := setupClientTest()
-			defer tearDown()
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/", test.handler)
 
@@ -247,17 +253,18 @@ func TestClient_Login_errors(t *testing.T) {
 }
 
 func TestClient_Logout(t *testing.T) {
-	client, mux, tearDown := setupClientTest()
-	defer tearDown()
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"logout","param":{"customernumber":"a","apikey":"b","apisessionid":"session-id"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -274,6 +281,7 @@ func TestClient_Logout(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -309,6 +317,7 @@ func TestClient_Logout_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -319,8 +328,7 @@ func TestClient_Logout_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux, tearDown := setupClientTest()
-			defer tearDown()
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/", test.handler)
 
@@ -331,17 +339,18 @@ func TestClient_Logout_errors(t *testing.T) {
 }
 
 func TestClient_GetDNSRecords(t *testing.T) {
-	client, mux, tearDown := setupClientTest()
-	defer tearDown()
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -380,6 +389,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -437,19 +447,22 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
 		{
 			desc: "responsedata marshaling error",
 			handler: func(rw http.ResponseWriter, req *http.Request) {
-				raw, err := ioutil.ReadAll(req.Body)
+				raw, err := io.ReadAll(req.Body)
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 
 				if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
 					http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+					return
 				}
 
 				response := `
@@ -466,6 +479,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 				_, err = rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -476,8 +490,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client, mux, tearDown := setupClientTest()
-			defer tearDown()
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/", test.handler)
 

@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,19 +12,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupAPIMock() (*Client, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	svr := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client := NewClient("", "")
-	client.BaseURL = svr.URL
+	client.BaseURL = server.URL
 
-	return client, handler, svr.Close
+	return client, mux
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -53,15 +54,14 @@ func TestClient_GetRecords(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-01.json")
+	expectedContent, err := os.ReadFile("./fixtures/records-01.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
 }
 
 func TestClient_GetRecords_error(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -83,8 +83,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 }
 
 func TestClient_CreateUpdateRecord(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -92,7 +91,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 			return
 		}
 
-		content, err := ioutil.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -127,8 +126,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 }
 
 func TestClient_CreateUpdateRecord_error(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -154,8 +152,7 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -163,7 +160,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 			return
 		}
 
-		content, err := ioutil.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -196,8 +193,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, handler := setupTest(t)
 
 	handler.HandleFunc("/lego.wtf", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
