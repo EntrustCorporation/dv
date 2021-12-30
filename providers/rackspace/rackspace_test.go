@@ -2,7 +2,7 @@ package rackspace
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,8 +22,7 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain)
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
@@ -38,8 +37,7 @@ func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 
@@ -50,8 +48,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 
@@ -101,30 +98,27 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func setupTest() (*Config, func()) {
-	apiURL, tearDown := startTestServers()
+func setupTest(t *testing.T) *Config {
+	t.Helper()
+
+	dnsAPI := httptest.NewServer(dnsHandler())
+	t.Cleanup(dnsAPI.Close)
+
+	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
+	t.Cleanup(identityAPI.Close)
 
 	config := NewDefaultConfig()
 	config.APIUser = "testUser"
 	config.APIKey = "testKey"
-	config.BaseURL = apiURL
+	config.HTTPClient = identityAPI.Client()
+	config.BaseURL = identityAPI.URL + "/"
 
-	return config, tearDown
-}
-
-func startTestServers() (string, func()) {
-	dnsAPI := httptest.NewServer(dnsHandler())
-	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
-
-	return identityAPI.URL + "/", func() {
-		identityAPI.Close()
-		dnsAPI.Close()
-	}
+	return config
 }
 
 func identityHandler(dnsEndpoint string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -158,7 +152,7 @@ func dnsHandler() *http.ServeMux {
 		switch r.Method {
 		// Used by `Present()` creating the TXT record
 		case http.MethodPost:
-			reqBody, err := ioutil.ReadAll(r.Body)
+			reqBody, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

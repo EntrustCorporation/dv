@@ -186,6 +186,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			}
 
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)
@@ -276,6 +277,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			}
 
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)
@@ -334,11 +336,12 @@ func mustParse(rawURL string) *url.URL {
 func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
 	}
 
 	username, apiKey, ok := req.BasicAuth()
 	if username != "bar" || apiKey != "foo" || !ok {
-		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and API key."))
+		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
 		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
@@ -371,11 +374,12 @@ func mockHandlerGetRecords(records []txtRecord) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
 		}
 
 		username, apiKey, ok := req.BasicAuth()
 		if username != "bar" || apiKey != "foo" || !ok {
-			rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and API key."))
+			rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
 			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -407,7 +411,7 @@ func mockHandlerDeleteRecord(rw http.ResponseWriter, req *http.Request) {
 
 	username, apiKey, ok := req.BasicAuth()
 	if username != "bar" || apiKey != "foo" || !ok {
-		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and API key."))
+		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and API key."))
 		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/entrustcorporation/dv/dns01"
 	"github.com/entrustcorporation/dv/providers/acmedns"
 	"github.com/entrustcorporation/dv/providers/alidns"
+	"github.com/entrustcorporation/dv/providers/allinkl"
 	"github.com/entrustcorporation/dv/providers/arvancloud"
 	"github.com/entrustcorporation/dv/providers/auroradns"
 	"github.com/entrustcorporation/dv/providers/autodns"
@@ -34,21 +35,27 @@ import (
 	"github.com/entrustcorporation/dv/providers/dynu"
 	"github.com/entrustcorporation/dv/providers/easydns"
 	"github.com/entrustcorporation/dv/providers/edgedns"
+	"github.com/entrustcorporation/dv/providers/epik"
 	"github.com/entrustcorporation/dv/providers/exec"
 	"github.com/entrustcorporation/dv/providers/exoscale"
+	"github.com/entrustcorporation/dv/providers/freemyip"
 	"github.com/entrustcorporation/dv/providers/gandi"
 	"github.com/entrustcorporation/dv/providers/gandiv5"
 	"github.com/entrustcorporation/dv/providers/gcloud"
+	"github.com/entrustcorporation/dv/providers/gcore"
 	"github.com/entrustcorporation/dv/providers/glesys"
 	"github.com/entrustcorporation/dv/providers/godaddy"
 	"github.com/entrustcorporation/dv/providers/hetzner"
 	"github.com/entrustcorporation/dv/providers/hostingde"
+	"github.com/entrustcorporation/dv/providers/hosttech"
 	"github.com/entrustcorporation/dv/providers/httpreq"
 	"github.com/entrustcorporation/dv/providers/hurricane"
 	"github.com/entrustcorporation/dv/providers/hyperone"
+	"github.com/entrustcorporation/dv/providers/ibmcloud"
 	"github.com/entrustcorporation/dv/providers/iij"
 	"github.com/entrustcorporation/dv/providers/infoblox"
 	"github.com/entrustcorporation/dv/providers/infomaniak"
+	"github.com/entrustcorporation/dv/providers/internetbs"
 	"github.com/entrustcorporation/dv/providers/inwx"
 	"github.com/entrustcorporation/dv/providers/ionos"
 	"github.com/entrustcorporation/dv/providers/joker"
@@ -64,6 +71,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/namesilo"
 	"github.com/entrustcorporation/dv/providers/netcup"
 	"github.com/entrustcorporation/dv/providers/netlify"
+	"github.com/entrustcorporation/dv/providers/nicmanager"
 	"github.com/entrustcorporation/dv/providers/nifcloud"
 	"github.com/entrustcorporation/dv/providers/njalla"
 	"github.com/entrustcorporation/dv/providers/ns1"
@@ -103,6 +111,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return acmedns.NewDNSProvider()
 	case "alidns":
 		return alidns.NewDNSProvider()
+	case "allinkl":
+		return allinkl.NewDNSProvider()
 	case "arvancloud":
 		return arvancloud.NewDNSProvider()
 	case "azure":
@@ -157,36 +167,48 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return easydns.NewDNSProvider()
 	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5
 		return edgedns.NewDNSProvider()
+	case "epik":
+		return epik.NewDNSProvider()
 	case "exec":
 		return exec.NewDNSProvider()
 	case "exoscale":
 		return exoscale.NewDNSProvider()
+	case "freemyip":
+		return freemyip.NewDNSProvider()
 	case "gandi":
 		return gandi.NewDNSProvider()
 	case "gandiv5":
 		return gandiv5.NewDNSProvider()
-	case "glesys":
-		return glesys.NewDNSProvider()
 	case "gcloud":
 		return gcloud.NewDNSProvider()
+	case "gcore":
+		return gcore.NewDNSProvider()
+	case "glesys":
+		return glesys.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
 	case "hetzner":
 		return hetzner.NewDNSProvider()
 	case "hostingde":
 		return hostingde.NewDNSProvider()
+	case "hosttech":
+		return hosttech.NewDNSProvider()
 	case "httpreq":
 		return httpreq.NewDNSProvider()
 	case "hurricane":
 		return hurricane.NewDNSProvider()
 	case "hyperone":
 		return hyperone.NewDNSProvider()
+	case "ibmcloud":
+		return ibmcloud.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
 	case "infoblox":
 		return infoblox.NewDNSProvider()
 	case "infomaniak":
 		return infomaniak.NewDNSProvider()
+	case "internetbs":
+		return internetbs.NewDNSProvider()
 	case "inwx":
 		return inwx.NewDNSProvider()
 	case "ionos":
@@ -219,6 +241,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netcup.NewDNSProvider()
 	case "netlify":
 		return netlify.NewDNSProvider()
+	case "nicmanager":
+		return nicmanager.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
 	case "njalla":

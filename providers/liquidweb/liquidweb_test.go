@@ -2,7 +2,7 @@ package liquidweb
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,9 +22,12 @@ var envTest = tester.NewEnvTest(
 	EnvZone).
 	WithDomain(envDomain)
 
-func setupTest() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.Username = "blars"
@@ -33,11 +36,9 @@ func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	config.Zone = "tacoman.com"
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -173,8 +174,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method)
@@ -184,7 +184,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, "tacoman", password)
 		assert.True(t, ok)
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -213,6 +213,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -221,8 +222,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/Network/DNS/Record/delete", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method)

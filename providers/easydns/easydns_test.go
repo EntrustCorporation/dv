@@ -2,7 +2,7 @@ package easydns
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -22,26 +22,26 @@ var envTest = tester.NewEnvTest(
 	EnvKey).
 	WithDomain(envDomain)
 
-func setup() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	endpoint, err := url.Parse(server.URL)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	config := NewDefaultConfig()
 	config.Token = "TOKEN"
 	config.Key = "SECRET"
 	config.Endpoint = endpoint
+	config.HTTPClient = server.Client()
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -143,8 +143,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones/records/add/example.com/TXT", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method, "method")
@@ -152,9 +151,10 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		expectedReqBody := `{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"}
@@ -179,6 +179,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -188,16 +189,14 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
-	provider, _, tearDown := setup()
-	defer tearDown()
+	provider, _ := setupTest(t)
 
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
@@ -215,6 +214,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -224,8 +224,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	errorMessage := `{
 		"error": {
@@ -242,6 +241,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 		_, err := fmt.Fprint(w, errorMessage)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

@@ -2,7 +2,7 @@ package auroradns
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,9 +16,12 @@ var envTest = tester.NewEnvTest(
 	EnvUserID,
 	EnvKey)
 
-func setupTest() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.UserID = "asdf1234"
@@ -26,11 +29,9 @@ func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	config.BaseURL = server.URL
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -146,8 +147,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
@@ -163,7 +163,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method)
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		require.NoError(t, err)
 		assert.Equal(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
 
@@ -181,8 +181,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method)

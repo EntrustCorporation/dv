@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -150,6 +149,7 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.Handle(path, http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
@@ -168,8 +168,6 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 		}
 	}))
 
-	t.Cleanup(server.Close)
-
 	passport := &Passport{
 		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
 	}
@@ -186,7 +184,7 @@ type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
 
 func hasReqBody(v interface{}) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
-		reqBody, err := ioutil.ReadAll(req.Body)
+		reqBody, err := io.ReadAll(req.Body)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}

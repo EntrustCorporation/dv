@@ -2,7 +2,7 @@ package digitalocean
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,20 +14,22 @@ import (
 
 var envTest = tester.NewEnvTest(EnvAuthToken)
 
-func setupTest() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.AuthToken = "asdf1234"
 	config.BaseURL = server.URL
+	config.HTTPClient = server.Client()
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -108,8 +110,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/v2/domains/example.com/records", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method, "method")
@@ -117,9 +118,10 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		expectedReqBody := `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`
@@ -139,6 +141,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -147,8 +150,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/v2/domains/example.com/records/1234567", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
