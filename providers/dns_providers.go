@@ -53,11 +53,13 @@ import (
 	"github.com/entrustcorporation/dv/providers/hyperone"
 	"github.com/entrustcorporation/dv/providers/ibmcloud"
 	"github.com/entrustcorporation/dv/providers/iij"
+	"github.com/entrustcorporation/dv/providers/iijdpf"
 	"github.com/entrustcorporation/dv/providers/infoblox"
 	"github.com/entrustcorporation/dv/providers/infomaniak"
 	"github.com/entrustcorporation/dv/providers/internetbs"
 	"github.com/entrustcorporation/dv/providers/inwx"
 	"github.com/entrustcorporation/dv/providers/ionos"
+	"github.com/entrustcorporation/dv/providers/iwantmyname"
 	"github.com/entrustcorporation/dv/providers/joker"
 	"github.com/entrustcorporation/dv/providers/lightsail"
 	"github.com/entrustcorporation/dv/providers/linode"
@@ -69,6 +71,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/namecheap"
 	"github.com/entrustcorporation/dv/providers/namedotcom"
 	"github.com/entrustcorporation/dv/providers/namesilo"
+	"github.com/entrustcorporation/dv/providers/nearlyfreespeech"
 	"github.com/entrustcorporation/dv/providers/netcup"
 	"github.com/entrustcorporation/dv/providers/netlify"
 	"github.com/entrustcorporation/dv/providers/nicmanager"
@@ -85,6 +88,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/rfc2136"
 	"github.com/entrustcorporation/dv/providers/rimuhosting"
 	"github.com/entrustcorporation/dv/providers/route53"
+	"github.com/entrustcorporation/dv/providers/safedns"
 	"github.com/entrustcorporation/dv/providers/sakuracloud"
 	"github.com/entrustcorporation/dv/providers/scaleway"
 	"github.com/entrustcorporation/dv/providers/selectel"
@@ -92,8 +96,11 @@ import (
 	"github.com/entrustcorporation/dv/providers/simply"
 	"github.com/entrustcorporation/dv/providers/sonic"
 	"github.com/entrustcorporation/dv/providers/stackpath"
+	"github.com/entrustcorporation/dv/providers/tencentcloud"
 	"github.com/entrustcorporation/dv/providers/transip"
+	"github.com/entrustcorporation/dv/providers/variomedia"
 	"github.com/entrustcorporation/dv/providers/vegadns"
+	"github.com/entrustcorporation/dv/providers/vercel"
 	"github.com/entrustcorporation/dv/providers/versio"
 	"github.com/entrustcorporation/dv/providers/vinyldns"
 	"github.com/entrustcorporation/dv/providers/vscale"
@@ -203,6 +210,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ibmcloud.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
+	case "iijdpf":
+		return iijdpf.NewDNSProvider()
 	case "infoblox":
 		return infoblox.NewDNSProvider()
 	case "infomaniak":
@@ -213,6 +222,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return inwx.NewDNSProvider()
 	case "ionos":
 		return ionos.NewDNSProvider()
+	case "iwantmyname":
+		return iwantmyname.NewDNSProvider()
 	case "joker":
 		return joker.NewDNSProvider()
 	case "lightsail":
@@ -237,6 +248,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namedotcom.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
+	case "nearlyfreespeech":
+		return nearlyfreespeech.NewDNSProvider()
 	case "netcup":
 		return netcup.NewDNSProvider()
 	case "netlify":
@@ -269,6 +282,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rimuhosting.NewDNSProvider()
 	case "route53":
 		return route53.NewDNSProvider()
+	case "safedns":
+		return safedns.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
 	case "scaleway":
@@ -283,10 +298,16 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return sonic.NewDNSProvider()
 	case "stackpath":
 		return stackpath.NewDNSProvider()
+	case "tencentcloud":
+		return tencentcloud.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
+	case "variomedia":
+		return variomedia.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "vercel":
+		return vercel.NewDNSProvider()
 	case "versio":
 		return versio.NewDNSProvider()
 	case "vinyldns":

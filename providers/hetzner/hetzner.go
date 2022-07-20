@@ -13,7 +13,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/hetzner/internal"
 )
 
-const minTTL = 600
+const minTTL = 60
 
 // Environment variables names.
 const (
