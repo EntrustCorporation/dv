@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 
 	"github.com/entrustcorporation/dv/dns01"
 	"golang.org/x/net/publicsuffix"
@@ -50,8 +49,7 @@ func (e *ErrorResponse) Error() string {
 
 // https://developer.stackpath.com/en/api/dns/#operation/GetZones
 func (d *DNSProvider) getZones(domain string) (*Zone, error) {
-	domain = dns01.UnFqdn(domain)
-	tld, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	tld, err := publicsuffix.EffectiveTLDPlusOne(dns01.UnFqdn(domain))
 	if err != nil {
 		return nil, err
 	}
@@ -126,19 +124,10 @@ func (d *DNSProvider) deleteZoneRecord(zone *Zone, record Record) error {
 }
 
 func (d *DNSProvider) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	u, err := d.BaseURL.Parse(path.Join(d.config.StackID, urlStr))
-	if err != nil {
-		return nil, err
-	}
+	u := d.BaseURL.JoinPath(d.config.StackID, urlStr)
 
 	if body == nil {
-		var req *http.Request
-		req, err = http.NewRequest(method, u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		return req, nil
+		return http.NewRequest(method, u.String(), nil)
 	}
 
 	reqBody, err := json.Marshal(body)

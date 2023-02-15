@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 )
 
 const defaultBaseURL = "https://api.reg.ru/api/regru2/"
@@ -99,7 +98,18 @@ func (c Client) do(request interface{}, fragments ...string) (*APIResponse, erro
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		return nil, fmt.Errorf("API error, status code: %d", resp.StatusCode)
+		all, errB := io.ReadAll(resp.Body)
+		if errB != nil {
+			return nil, fmt.Errorf("API error, status code: %d", resp.StatusCode)
+		}
+
+		var apiResp APIResponse
+		errB = json.Unmarshal(all, &apiResp)
+		if errB != nil {
+			return nil, fmt.Errorf("API error, status code: %d, %s", resp.StatusCode, string(all))
+		}
+
+		return nil, fmt.Errorf("%w, status code: %d", apiResp, resp.StatusCode)
 	}
 
 	all, err := io.ReadAll(resp.Body)
@@ -122,10 +132,5 @@ func (c Client) createEndpoint(fragments ...string) (*url.URL, error) {
 		return nil, err
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, path.Join(fragments...)))
-	if err != nil {
-		return nil, err
-	}
-
-	return endpoint, nil
+	return baseURL.JoinPath(fragments...), nil
 }

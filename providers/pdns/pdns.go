@@ -172,7 +172,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
-	return nil
+
+	return d.notify(zone)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -210,5 +211,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
-	return nil
+
+	return d.notify(zone)
 }

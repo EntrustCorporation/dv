@@ -84,8 +84,8 @@ type ErrCNAMERequired struct {
 
 // Error returns a descriptive message for the ErrCNAMERequired instance telling
 // the user that a CNAME needs to be added to the DNS zone of c.Domain before
-// the ACME-DNS hook will work. The CNAME to be created should be of the form:
-//   {{ c.FQDN }} 	CNAME	{{ c.Target }}
+// the ACME-DNS hook will work.
+// The CNAME to be created should be of the form: {{ c.FQDN }} 	CNAME	{{ c.Target }}.
 func (e ErrCNAMERequired) Error() string {
 	return fmt.Sprintf("acme-dns: new account created for %q. "+
 		"To complete setup for %q you must provision the following "+
@@ -107,6 +107,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	account, err := d.storage.Fetch(domain)
 	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
 	if err != nil && !errors.Is(err, goacmedns.ErrDomainNotFound) {

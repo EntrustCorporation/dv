@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/entrustcorporation/dv/providers/dynu/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -99,6 +97,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	rootDomain, err := d.client.GetRootDomain(domain)
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
@@ -116,11 +115,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, domain)
+	if err != nil {
+		return fmt.Errorf("dynu: %w", err)
+	}
+
 	record := internal.DNSRecord{
 		Type:       "TXT",
 		DomainName: rootDomain.DomainName,
 		Hostname:   dns01.UnFqdn(fqdn),
-		NodeName:   dns01.UnFqdn(strings.TrimSuffix(fqdn, dns.Fqdn(domain))),
+		NodeName:   subDomain,
 		TextData:   value,
 		State:      true,
 		TTL:        d.config.TTL,
@@ -138,6 +142,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	rootDomain, err := d.client.GetRootDomain(domain)
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)

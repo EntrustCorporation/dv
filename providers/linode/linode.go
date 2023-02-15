@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/entrustcorporation/dv/dns01"
@@ -132,6 +131,7 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zone, err := d.getHostedZoneInfo(fqdn)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Remove the specified resource, if it exists.
 	for _, resource := range resources {
-		if (resource.Name == strings.TrimSuffix(fqdn, ".") || resource.Name == zone.resourceName) &&
+		if (resource.Name == dns01.UnFqdn(fqdn) || resource.Name == zone.resourceName) &&
 			resource.Target == value {
 			if err := d.client.DeleteDomainRecord(context.Background(), zone.domainID, resource.ID); err != nil {
 				return err
@@ -200,8 +200,13 @@ func (d *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 		return nil, errors.New("domain not found")
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return nil, err
+	}
+
 	return &hostedZoneInfo{
 		domainID:     domains[0].ID,
-		resourceName: strings.TrimSuffix(fqdn, "."+authZone),
+		resourceName: subDomain,
 	}, nil
 }

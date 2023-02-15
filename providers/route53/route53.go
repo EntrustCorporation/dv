@@ -10,6 +10,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -27,6 +29,7 @@ const (
 	EnvRegion          = envNamespace + "REGION"
 	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
+	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -35,22 +38,34 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	MaxRetries         int
+	// Static credential chain.
+	// These are not set via environment for the time being and are only used if they are explicitly provided.
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+	Region          string
+
+	HostedZoneID  string
+	MaxRetries    int
+	AssumeRoleArn string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HostedZoneID       string
-	Client             *route53.Route53
+
+	Client *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
+		HostedZoneID:  env.GetOrFile(EnvHostedZoneID),
+		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
+		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
-		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
 	}
 }
 
@@ -84,10 +99,10 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 // NewDNSProvider returns a DNSProvider instance configured for the AWS Route 53 service.
 //
 // AWS Credentials are automatically detected in the following locations and prioritized in the following order:
-// 1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
-//    AWS_REGION, [AWS_SESSION_TOKEN]
-// 2. Shared credentials file (defaults to ~/.aws/credentials)
-// 3. Amazon EC2 IAM role
+//  1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+//     AWS_REGION, [AWS_SESSION_TOKEN]
+//  2. Shared credentials file (defaults to ~/.aws/credentials)
+//  3. Amazon EC2 IAM role
 //
 // If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 //
@@ -106,17 +121,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{client: config.Client, config: config}, nil
 	}
 
-	retry := customRetryer{}
-	retry.NumMaxRetries = config.MaxRetries
-	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
-
-	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	sess, err := createSession(config)
 	if err != nil {
 		return nil, err
 	}
 
-	cl := route53.New(sess)
-	return &DNSProvider{client: cl, config: config}, nil
+	return &DNSProvider{
+		client: route53.New(sess),
+		config: config,
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -293,4 +306,54 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/hostedzone/")
 
 	return hostedZoneID, nil
+}
+
+func createSession(config *Config) (*session.Session, error) {
+	if err := createSessionCheckParams(config); err != nil {
+		return nil, err
+	}
+
+	retry := customRetryer{}
+	retry.NumMaxRetries = config.MaxRetries
+
+	awsConfig := aws.NewConfig()
+	if config.AccessKeyID != "" && config.SecretAccessKey != "" {
+		awsConfig = awsConfig.WithCredentials(credentials.NewStaticCredentials(config.AccessKeyID, config.SecretAccessKey, config.SessionToken))
+	}
+
+	if config.Region != "" {
+		awsConfig = awsConfig.WithRegion(config.Region)
+	}
+
+	sessionCfg := request.WithRetryer(awsConfig, retry)
+
+	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	if err != nil {
+		return nil, err
+	}
+
+	if config.AssumeRoleArn == "" {
+		return sess, nil
+	}
+
+	return session.NewSession(&aws.Config{
+		Region:      sess.Config.Region,
+		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn),
+	})
+}
+
+func createSessionCheckParams(config *Config) error {
+	if config == nil {
+		return errors.New("config is nil")
+	}
+
+	switch {
+	case config.SessionToken != "" && config.AccessKeyID == "" && config.SecretAccessKey == "":
+		return errors.New("SessionToken must be supplied with AccessKeyID and SecretAccessKey")
+
+	case config.AccessKeyID == "" && config.SecretAccessKey != "" || config.AccessKeyID != "" && config.SecretAccessKey == "":
+		return errors.New("AccessKeyID and SecretAccessKey must be supplied together")
+	}
+
+	return nil
 }

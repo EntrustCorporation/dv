@@ -1,12 +1,12 @@
 Name = "ArvanCloud"
 Description = ''''''
-URL = "https://arvancloud.com"
+URL = "https://arvancloud.ir"
 Code = "arvancloud"
 Since = "v3.8.0"
 
 Example = '''
 ARVANCLOUD_API_KEY="Apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
-lego --email myemail@example.com --dns arvancloud --domains my.example.org run
+lego --email you@example.com --dns arvancloud --domains my.example.org run
 '''
 
 [Configuration]
@@ -19,4 +19,4 @@ lego --email myemail@example.com --dns arvancloud --domains my.example.org run
     ARVANCLOUD_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://www.arvancloud.com/docs/api/cdn/4.0"
+  API = "https://www.arvancloud.ir/docs/api/cdn/4.0"

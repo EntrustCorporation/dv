@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/entrustcorporation/dv/dns01"
@@ -88,12 +87,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	zoneID, zoneName, err := d.getHostedZone(domain)
+
+	zoneID, zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	recordAttributes, err := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	if err != nil {
+		return err
+	}
+
 	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("API call failed: %w", err)
@@ -106,12 +110,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	records, err := d.findTxtRecords(domain, fqdn)
+	zoneID, zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	zoneID, _, err := d.getHostedZone(domain)
+	records, err := d.findTxtRecords(fqdn, zoneID, zoneName)
 	if err != nil {
 		return err
 	}
@@ -137,7 +141,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", "", err
 	}
@@ -156,45 +160,38 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	return hostedZone.ID.String(), hostedZone.Name, nil
 }
 
-func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
-	name := extractRecordName(fqdn, zone)
-
-	return &dnspod.Record{
-		Type:  "TXT",
-		Name:  name,
-		Value: value,
-		Line:  "默认",
-		TTL:   strconv.Itoa(ttl),
-	}
-}
-
-func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
-	zoneID, zoneName, err := d.getHostedZone(domain)
+func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) (*dnspod.Record, error) {
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
 	if err != nil {
 		return nil, err
 	}
 
-	recordName := extractRecordName(fqdn, zoneName)
+	return &dnspod.Record{
+		Type:  "TXT",
+		Name:  subDomain,
+		Value: value,
+		Line:  "默认",
+		TTL:   strconv.Itoa(ttl),
+	}, nil
+}
+
+func (d *DNSProvider) findTxtRecords(fqdn, zoneID, zoneName string) ([]dnspod.Record, error) {
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return nil, err
+	}
 
 	var records []dnspod.Record
-	result, _, err := d.client.Records.List(zoneID, recordName)
+	result, _, err := d.client.Records.List(zoneID, subDomain)
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	for _, record := range result {
-		if record.Name == recordName {
+		if record.Name == subDomain {
 			records = append(records, record)
 		}
 	}
 
 	return records, nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

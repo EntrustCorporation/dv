@@ -7,7 +7,7 @@ Since = "v1.1.0"
 Example = '''
 SAKURACLOUD_ACCESS_TOKEN=xxxxx \
 SAKURACLOUD_ACCESS_TOKEN_SECRET=yyyyy \
-lego --email myemail@example.com --dns sakuracloud --domains my.example.org run
+lego --email you@example.com --dns sakuracloud --domains my.example.org run
 '''
 
 [Configuration]
@@ -22,4 +22,4 @@ lego --email myemail@example.com --dns sakuracloud --domains my.example.org run
 
 [Links]
   API = "https://developer.sakura.ad.jp/cloud/api/1.1/"
-  GoClient = "https://github.com/sacloud/libsacloud"
+  GoClient = "https://github.com/sacloud/iaas-api-go"
