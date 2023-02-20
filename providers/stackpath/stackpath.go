@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/entrustcorporation/dv/dns01"
@@ -113,15 +112,20 @@ func getOathClient(config *Config) *http.Client {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	zone, err := d.getZones(domain)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getZones(fqdn)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	if err != nil {
+		return fmt.Errorf("stackpath: %w", err)
+	}
 
 	record := Record{
-		Name: extractRecordName(fqdn, zone.Domain),
+		Name: subDomain,
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: value,
@@ -132,15 +136,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	zone, err := d.getZones(domain)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getZones(fqdn)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	recordName := extractRecordName(fqdn, zone.Domain)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	if err != nil {
+		return fmt.Errorf("stackpath: %w", err)
+	}
 
-	records, err := d.getZoneRecords(recordName, zone)
+	records, err := d.getZoneRecords(subDomain, zone)
 	if err != nil {
 		return err
 	}
@@ -159,12 +167,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

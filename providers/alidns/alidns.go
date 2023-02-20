@@ -4,7 +4,6 @@ package alidns
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
@@ -132,7 +131,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneName, err := d.getHostedZone(domain)
+	zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
@@ -153,12 +152,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	records, err := d.findTxtRecords(domain, fqdn)
+	records, err := d.findTxtRecords(fqdn)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
 
-	_, err = d.getHostedZone(domain)
+	_, err = d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
@@ -197,7 +196,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		startPage++
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", err
 	}
@@ -233,8 +232,8 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainR
 	return request, nil
 }
 
-func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, error) {
-	zoneName, err := d.getHostedZone(domain)
+func (d *DNSProvider) findTxtRecords(fqdn string) ([]alidns.Record, error) {
+	zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +255,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 	}
 
 	for _, record := range result.DomainRecords.Record {
-		if record.RR == recordName {
+		if record.RR == recordName && record.Type == "TXT" {
 			records = append(records, record)
 		}
 	}
@@ -269,9 +268,10 @@ func extractRecordName(fqdn, zone string) (string, error) {
 		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}
 
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+asciiDomain); idx != -1 {
-		return name[:idx], nil
+	subDomain, err := dns01.ExtractSubDomain(fqdn, asciiDomain)
+	if err != nil {
+		return "", err
 	}
-	return name, nil
+
+	return subDomain, nil
 }

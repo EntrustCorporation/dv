@@ -99,7 +99,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := getAuthZone(domain)
+	authZone, err := getAuthZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -109,7 +109,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: %w", err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("servercow: %w", err)
+	}
 
 	record := findRecords(records, recordName)
 
@@ -152,7 +155,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := getAuthZone(domain)
+	authZone, err := getAuthZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -162,7 +165,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: failed to get TXT records: %w", err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("servercow: %w", err)
+	}
 
 	record := findRecords(records, recordName)
 	if record == nil {
@@ -203,7 +209,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func getAuthZone(domain string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for domain %q: %w", domain, err)
 	}
@@ -230,8 +236,4 @@ func containsValue(record *internal.Record, value string) bool {
 	}
 
 	return false
-}
-
-func getRecordName(fqdn, authZone string) string {
-	return fqdn[0 : len(fqdn)-len(authZone)-2]
 }

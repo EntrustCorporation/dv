@@ -15,6 +15,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/bindman"
 	"github.com/entrustcorporation/dv/providers/bluecat"
 	"github.com/entrustcorporation/dv/providers/checkdomain"
+	"github.com/entrustcorporation/dv/providers/civo"
 	"github.com/entrustcorporation/dv/providers/clouddns"
 	"github.com/entrustcorporation/dv/providers/cloudflare"
 	"github.com/entrustcorporation/dv/providers/cloudns"
@@ -24,6 +25,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/desec"
 	"github.com/entrustcorporation/dv/providers/designate"
 	"github.com/entrustcorporation/dv/providers/digitalocean"
+	"github.com/entrustcorporation/dv/providers/dnshomede"
 	"github.com/entrustcorporation/dv/providers/dnsimple"
 	"github.com/entrustcorporation/dv/providers/dnsmadeeasy"
 	"github.com/entrustcorporation/dv/providers/dnspod"
@@ -53,12 +55,15 @@ import (
 	"github.com/entrustcorporation/dv/providers/hyperone"
 	"github.com/entrustcorporation/dv/providers/ibmcloud"
 	"github.com/entrustcorporation/dv/providers/iij"
+	"github.com/entrustcorporation/dv/providers/iijdpf"
 	"github.com/entrustcorporation/dv/providers/infoblox"
 	"github.com/entrustcorporation/dv/providers/infomaniak"
 	"github.com/entrustcorporation/dv/providers/internetbs"
 	"github.com/entrustcorporation/dv/providers/inwx"
 	"github.com/entrustcorporation/dv/providers/ionos"
+	"github.com/entrustcorporation/dv/providers/iwantmyname"
 	"github.com/entrustcorporation/dv/providers/joker"
+	"github.com/entrustcorporation/dv/providers/liara"
 	"github.com/entrustcorporation/dv/providers/lightsail"
 	"github.com/entrustcorporation/dv/providers/linode"
 	"github.com/entrustcorporation/dv/providers/liquidweb"
@@ -69,6 +74,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/namecheap"
 	"github.com/entrustcorporation/dv/providers/namedotcom"
 	"github.com/entrustcorporation/dv/providers/namesilo"
+	"github.com/entrustcorporation/dv/providers/nearlyfreespeech"
 	"github.com/entrustcorporation/dv/providers/netcup"
 	"github.com/entrustcorporation/dv/providers/netlify"
 	"github.com/entrustcorporation/dv/providers/nicmanager"
@@ -85,6 +91,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/rfc2136"
 	"github.com/entrustcorporation/dv/providers/rimuhosting"
 	"github.com/entrustcorporation/dv/providers/route53"
+	"github.com/entrustcorporation/dv/providers/safedns"
 	"github.com/entrustcorporation/dv/providers/sakuracloud"
 	"github.com/entrustcorporation/dv/providers/scaleway"
 	"github.com/entrustcorporation/dv/providers/selectel"
@@ -92,14 +99,21 @@ import (
 	"github.com/entrustcorporation/dv/providers/simply"
 	"github.com/entrustcorporation/dv/providers/sonic"
 	"github.com/entrustcorporation/dv/providers/stackpath"
+	"github.com/entrustcorporation/dv/providers/tencentcloud"
 	"github.com/entrustcorporation/dv/providers/transip"
+	"github.com/entrustcorporation/dv/providers/ultradns"
+	"github.com/entrustcorporation/dv/providers/variomedia"
 	"github.com/entrustcorporation/dv/providers/vegadns"
+	"github.com/entrustcorporation/dv/providers/vercel"
 	"github.com/entrustcorporation/dv/providers/versio"
 	"github.com/entrustcorporation/dv/providers/vinyldns"
+	"github.com/entrustcorporation/dv/providers/vkcloud"
 	"github.com/entrustcorporation/dv/providers/vscale"
 	"github.com/entrustcorporation/dv/providers/vultr"
+	"github.com/entrustcorporation/dv/providers/websupport"
 	"github.com/entrustcorporation/dv/providers/wedos"
 	"github.com/entrustcorporation/dv/providers/yandex"
+	"github.com/entrustcorporation/dv/providers/yandexcloud"
 	"github.com/entrustcorporation/dv/providers/zoneee"
 	"github.com/entrustcorporation/dv/providers/zonomi"
 )
@@ -127,6 +141,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bluecat.NewDNSProvider()
 	case "checkdomain":
 		return checkdomain.NewDNSProvider()
+	case "civo":
+		return civo.NewDNSProvider()
 	case "clouddns":
 		return clouddns.NewDNSProvider()
 	case "cloudflare":
@@ -145,6 +161,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return designate.NewDNSProvider()
 	case "digitalocean":
 		return digitalocean.NewDNSProvider()
+	case "dnshomede":
+		return dnshomede.NewDNSProvider()
 	case "dnsimple":
 		return dnsimple.NewDNSProvider()
 	case "dnsmadeeasy":
@@ -203,6 +221,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ibmcloud.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
+	case "iijdpf":
+		return iijdpf.NewDNSProvider()
 	case "infoblox":
 		return infoblox.NewDNSProvider()
 	case "infomaniak":
@@ -213,8 +233,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return inwx.NewDNSProvider()
 	case "ionos":
 		return ionos.NewDNSProvider()
+	case "iwantmyname":
+		return iwantmyname.NewDNSProvider()
 	case "joker":
 		return joker.NewDNSProvider()
+	case "liara":
+		return liara.NewDNSProvider()
 	case "lightsail":
 		return lightsail.NewDNSProvider()
 	case "linode", "linodev4": // "linodev4" is for compatibility with v3, must be dropped in v5
@@ -237,6 +261,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namedotcom.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
+	case "nearlyfreespeech":
+		return nearlyfreespeech.NewDNSProvider()
 	case "netcup":
 		return netcup.NewDNSProvider()
 	case "netlify":
@@ -269,6 +295,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rimuhosting.NewDNSProvider()
 	case "route53":
 		return route53.NewDNSProvider()
+	case "safedns":
+		return safedns.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
 	case "scaleway":
@@ -283,22 +311,36 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return sonic.NewDNSProvider()
 	case "stackpath":
 		return stackpath.NewDNSProvider()
+	case "tencentcloud":
+		return tencentcloud.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
+	case "ultradns":
+		return ultradns.NewDNSProvider()
+	case "variomedia":
+		return variomedia.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "vercel":
+		return vercel.NewDNSProvider()
 	case "versio":
 		return versio.NewDNSProvider()
 	case "vinyldns":
 		return vinyldns.NewDNSProvider()
-	case "vultr":
-		return vultr.NewDNSProvider()
+	case "vkcloud":
+		return vkcloud.NewDNSProvider()
 	case "vscale":
 		return vscale.NewDNSProvider()
+	case "vultr":
+		return vultr.NewDNSProvider()
+	case "websupport":
+		return websupport.NewDNSProvider()
 	case "wedos":
 		return wedos.NewDNSProvider()
 	case "yandex":
 		return yandex.NewDNSProvider()
+	case "yandexcloud":
+		return yandexcloud.NewDNSProvider()
 	case "zoneee":
 		return zoneee.NewDNSProvider()
 	case "zonomi":

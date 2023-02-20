@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -199,6 +198,9 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
+	envTest.ClearEnv()
+	defer envTest.RestoreEnv()
+
 	testCases := []struct {
 		desc                  string
 		compartmentID         string
@@ -206,8 +208,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		expected              string
 	}{
 		{
-			desc:                  "invalid configuration",
-			configurationProvider: &configProvider{},
+			desc:                  "configuration provider error",
+			configurationProvider: mockConfigurationProvider("wrong-secret"),
 			compartmentID:         "123",
 			expected:              "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
 		},
@@ -217,8 +219,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:      "oraclecloud: OCIConfigProvider is missing",
 		},
 		{
-			desc:     "missing CompartmentID",
-			expected: "oraclecloud: CompartmentID is missing",
+			desc:                  "missing CompartmentID",
+			configurationProvider: mockConfigurationProvider("secret"),
+			expected:              "oraclecloud: CompartmentID is missing",
 		},
 	}
 
@@ -270,6 +273,24 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func mockConfigurationProvider(keyPassphrase string) *configProvider {
+	envTest.Apply(map[string]string{
+		envPrivKey: mustGeneratePrivateKey("secret"),
+	})
+
+	return &configProvider{
+		values: map[string]string{
+			EnvCompartmentOCID:   "test",
+			EnvPrivKeyPass:       "test",
+			EnvTenancyOCID:       "test",
+			EnvUserOCID:          "test",
+			EnvPubKeyFingerprint: "test",
+			EnvRegion:            "test",
+		},
+		privateKeyPassphrase: keyPassphrase,
+	}
+}
+
 func mustGeneratePrivateKey(pwd string) string {
 	block, err := generatePrivateKey(pwd)
 	if err != nil {
@@ -285,7 +306,7 @@ func mustGeneratePrivateKeyFile(pwd string) string {
 		panic(err)
 	}
 
-	file, err := ioutil.TempFile("", "lego_oci_*.pem")
+	file, err := os.CreateTemp("", "lego_oci_*.pem")
 	if err != nil {
 		panic(err)
 	}
