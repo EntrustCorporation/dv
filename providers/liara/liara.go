@@ -2,6 +2,7 @@
 package liara
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -94,8 +95,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("liara: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL)
 	}
 
-	client := internal.NewClient(config.APIKey)
-
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 	if config.HTTPClient != nil {
@@ -103,7 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 	retryClient.Logger = log.Logger
 
-	client.HTTPClient = retryClient.StandardClient()
+	client := internal.NewClient(internal.OAuthStaticAccessToken(retryClient.StandardClient(), config.APIKey))
 
 	return &DNSProvider{
 		config:    config,
@@ -120,14 +119,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("liara: %w", err)
+		return fmt.Errorf("liara: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("liara: %w", err)
 	}
@@ -135,12 +134,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.Record{
 		Type:     "TXT",
 		Name:     subDomain,
-		Contents: []internal.Content{{Text: value}},
+		Contents: []internal.Content{{Text: info.Value}},
 		TTL:      d.config.TTL,
 	}
-	newRecord, err := d.client.CreateRecord(dns01.UnFqdn(authZone), record)
+	newRecord, err := d.client.CreateRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
-		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -152,11 +151,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("liara: %w", err)
+		return fmt.Errorf("liara: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// gets the record's unique ID
@@ -164,10 +163,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("liara: failed to delete TXT record, id=%s: %w", recordID, err)
 	}

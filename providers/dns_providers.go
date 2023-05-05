@@ -14,6 +14,8 @@ import (
 	"github.com/entrustcorporation/dv/providers/azure"
 	"github.com/entrustcorporation/dv/providers/bindman"
 	"github.com/entrustcorporation/dv/providers/bluecat"
+	"github.com/entrustcorporation/dv/providers/brandit"
+	"github.com/entrustcorporation/dv/providers/bunny"
 	"github.com/entrustcorporation/dv/providers/checkdomain"
 	"github.com/entrustcorporation/dv/providers/civo"
 	"github.com/entrustcorporation/dv/providers/clouddns"
@@ -22,6 +24,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/cloudxns"
 	"github.com/entrustcorporation/dv/providers/conoha"
 	"github.com/entrustcorporation/dv/providers/constellix"
+	"github.com/entrustcorporation/dv/providers/derak"
 	"github.com/entrustcorporation/dv/providers/desec"
 	"github.com/entrustcorporation/dv/providers/designate"
 	"github.com/entrustcorporation/dv/providers/digitalocean"
@@ -47,6 +50,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/gcore"
 	"github.com/entrustcorporation/dv/providers/glesys"
 	"github.com/entrustcorporation/dv/providers/godaddy"
+	"github.com/entrustcorporation/dv/providers/googledomains"
 	"github.com/entrustcorporation/dv/providers/hetzner"
 	"github.com/entrustcorporation/dv/providers/hostingde"
 	"github.com/entrustcorporation/dv/providers/hosttech"
@@ -80,11 +84,13 @@ import (
 	"github.com/entrustcorporation/dv/providers/nicmanager"
 	"github.com/entrustcorporation/dv/providers/nifcloud"
 	"github.com/entrustcorporation/dv/providers/njalla"
+	"github.com/entrustcorporation/dv/providers/nodion"
 	"github.com/entrustcorporation/dv/providers/ns1"
 	"github.com/entrustcorporation/dv/providers/oraclecloud"
 	"github.com/entrustcorporation/dv/providers/otc"
 	"github.com/entrustcorporation/dv/providers/ovh"
 	"github.com/entrustcorporation/dv/providers/pdns"
+	"github.com/entrustcorporation/dv/providers/plesk"
 	"github.com/entrustcorporation/dv/providers/porkbun"
 	"github.com/entrustcorporation/dv/providers/rackspace"
 	"github.com/entrustcorporation/dv/providers/regru"
@@ -121,7 +127,7 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
-	case "acme-dns":
+	case "acme-dns": // TODO(ldez): remove "-" in v5
 		return acmedns.NewDNSProvider()
 	case "alidns":
 		return alidns.NewDNSProvider()
@@ -139,6 +145,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bindman.NewDNSProvider()
 	case "bluecat":
 		return bluecat.NewDNSProvider()
+	case "brandit":
+		return brandit.NewDNSProvider()
+	case "bunny":
+		return bunny.NewDNSProvider()
 	case "checkdomain":
 		return checkdomain.NewDNSProvider()
 	case "civo":
@@ -155,6 +165,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return conoha.NewDNSProvider()
 	case "constellix":
 		return constellix.NewDNSProvider()
+	case "derak":
+		return derak.NewDNSProvider()
 	case "desec":
 		return desec.NewDNSProvider()
 	case "designate":
@@ -205,6 +217,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return glesys.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
+	case "googledomains":
+		return googledomains.NewDNSProvider()
 	case "hetzner":
 		return hetzner.NewDNSProvider()
 	case "hostingde":
@@ -273,6 +287,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return nifcloud.NewDNSProvider()
 	case "njalla":
 		return njalla.NewDNSProvider()
+	case "nodion":
+		return nodion.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":
@@ -283,6 +299,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ovh.NewDNSProvider()
 	case "pdns":
 		return pdns.NewDNSProvider()
+	case "plesk":
+		return plesk.NewDNSProvider()
 	case "porkbun":
 		return porkbun.NewDNSProvider()
 	case "rackspace":

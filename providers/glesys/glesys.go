@@ -2,6 +2,7 @@
 package glesys
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/entrustcorporation/dv/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/entrustcorporation/dv/providers/glesys/internal"
 )
 
 const (
@@ -55,7 +57,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config        *Config
+	config *Config
+	client *internal.Client
+
 	activeRecords map[string]int
 	inProgressMu  sync.Mutex
 }
@@ -90,62 +94,66 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("glesys: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
+	client := internal.NewClient(config.APIUser, config.APIKey)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config:        config,
+		client:        client,
 		activeRecords: make(map[string]int),
 	}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("glesys: findZoneByFqdn failure: %w", err)
+		return fmt.Errorf("glesys: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("glesys: %w", err)
 	}
 
-	// acquire lock and check there is not a challenge already in
-	// progress for this value of authZone
+	// acquire lock and check there is not a challenge already in progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	recordID, err := d.addTXTRecord(domain, dns01.UnFqdn(authZone), subDomain, value, d.config.TTL)
+	recordID, err := d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
 
 	// save data necessary for CleanUp
-	d.activeRecords[fqdn] = recordID
+	d.activeRecords[info.EffectiveFQDN] = recordID
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
-	if _, ok := d.activeRecords[fqdn]; !ok {
+	if _, ok := d.activeRecords[info.EffectiveFQDN]; !ok {
 		// if there is no cleanup information then just return
 		return nil
 	}
 
-	recordID := d.activeRecords[fqdn]
-	delete(d.activeRecords, fqdn)
+	recordID := d.activeRecords[info.EffectiveFQDN]
+	delete(d.activeRecords, info.EffectiveFQDN)
 
 	// delete TXT record from authZone
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	return d.deleteTXTRecord(domain, recordID)
+	return d.client.DeleteTXTRecord(context.Background(), recordID)
 }
 
 // Timeout returns the values (20*time.Minute, 20*time.Second) which
