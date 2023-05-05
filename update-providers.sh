@@ -5,6 +5,7 @@ git clone --depth 1 https://github.com/go-acme/lego.git /tmp/lego
 cp -r /tmp/lego/providers/dns ./providers
 
 cp /tmp/lego/challenge/dns01/dns_challenge_manual.go ./dns01
+cp /tmp/lego/challenge/dns01/domain.go ./dns01
 cp /tmp/lego/LICENSE ./providers
 cp /tmp/lego/go.sum ./
 
