@@ -2,6 +2,7 @@
 package epik
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -93,15 +94,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("epik: %w", err)
+		return fmt.Errorf("epik: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
@@ -109,11 +110,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.RecordRequest{
 		Host: subDomain,
 		Type: "TXT",
-		Data: value,
+		Data: info.Value,
 		TTL:  d.config.TTL,
 	}
 
-	_, err = d.client.CreateHostRecord(dns01.UnFqdn(authZone), record)
+	_, err = d.client.CreateHostRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
@@ -123,29 +124,31 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// find authZone
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("epik: %w", err)
+		return fmt.Errorf("epik: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	dom := dns01.UnFqdn(authZone)
 
-	records, err := d.client.GetDNSRecords(dom)
+	ctx := context.Background()
+
+	records, err := d.client.GetDNSRecords(ctx, dom)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
 
 	for _, record := range records {
-		if strings.EqualFold(record.Type, "TXT") && record.Data == value && record.Name == subDomain {
-			_, err = d.client.RemoveHostRecord(dom, record.ID)
+		if strings.EqualFold(record.Type, "TXT") && record.Data == info.Value && record.Name == subDomain {
+			_, err = d.client.RemoveHostRecord(ctx, dom, record.ID)
 			if err != nil {
 				return fmt.Errorf("epik: %w", err)
 			}

@@ -91,26 +91,28 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("civo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zone := dns01.UnFqdn(authZone)
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
 	_, err = d.client.CreateDNSRecord(dnsDomain.ID, &civogo.DNSRecordConfig{
 		Name:  subDomain,
-		Value: value,
+		Value: info.Value,
 		Type:  civogo.DNSRecordTypeTXT,
 		TTL:   d.config.TTL,
 	})
@@ -123,12 +125,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("civo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zone := dns01.UnFqdn(authZone)
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
@@ -140,14 +144,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
 	var dnsRecord civogo.DNSRecord
 	for _, entry := range dnsRecords {
-		if entry.Name == subDomain && entry.Value == value {
+		if entry.Name == subDomain && entry.Value == info.Value {
 			dnsRecord = entry
 			break
 		}
@@ -165,13 +169,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }
