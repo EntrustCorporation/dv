@@ -18,6 +18,9 @@ jobs:
         run: |
           ./update-providers.sh
 
+      - name: Build
+        run: go build -v ./...
+      
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
