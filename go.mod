@@ -20,7 +20,7 @@ require (
 	github.com/entrustcorporation/entrust v0.0.0-20230314134457-b6b1cf0dd3bb
 	github.com/exoscale/egoscale v0.90.0
 	github.com/go-acme/lego/v4 v4.11.0
-	github.com/go-jose/go-jose/v3 v3.0.0
+	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.0.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
