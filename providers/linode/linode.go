@@ -104,8 +104,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: &client}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation.  Adjusting here to cope with spikes in propagation times.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 	timeout := d.config.PropagationTimeout
 	if d.config.PropagationTimeout <= 0 {
@@ -177,7 +177,7 @@ func (d *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	// Lookup the zone that handles the specified FQDN.
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("inwx: could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	// Query the authority zone.

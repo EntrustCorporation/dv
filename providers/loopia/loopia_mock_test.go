@@ -3,7 +3,6 @@ package loopia
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/entrustcorporation/dv/providers/loopia/internal"
@@ -47,7 +46,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "AddTXTRecord fails",
 
-			addTXTRecordError: fmt.Errorf("unknown error: 'ADDTXT'"),
+			addTXTRecordError: errors.New("unknown error: 'ADDTXT'"),
 			callAddTXTRecord:  true,
 
 			expectedError: "loopia: failed to add TXT record: unknown error: 'ADDTXT'",
@@ -55,7 +54,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "GetTXTRecords fails",
 
-			getTXTRecordsError: fmt.Errorf("unknown error: 'GETTXT'"),
+			getTXTRecordsError: errors.New("unknown error: 'GETTXT'"),
 			callAddTXTRecord:   true,
 			callGetTXTRecords:  true,
 
@@ -149,10 +148,10 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			callGetTXTRecords:    true,
 			callRemoveSubdomain:  true,
 
-			expectedError: `loopia: failed to remove sub-domain: unknown error: "UNKNOWN_ERROR"`,
+			expectedError: `loopia: failed to remove subdomain: unknown error: "UNKNOWN_ERROR"`,
 		},
 		{
-			desc: "Dont call removeSubdomain when records",
+			desc: "Don't call removeSubdomain when records",
 
 			getTXTRecordsReturn: []internal.RecordObj{{Type: "TXT", Rdata: "LEFTOVER"}},
 			callAddTXTRecord:    true,

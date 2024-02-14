@@ -2,6 +2,7 @@ package transip
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -22,6 +23,18 @@ type fakeClient struct {
 	setDNSEntriesLatency time.Duration
 	getInfoLatency       time.Duration
 	domainName           string
+}
+
+func (f *fakeClient) PutWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
+}
+
+func (f *fakeClient) PostWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
+}
+
+func (f *fakeClient) PatchWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
 }
 
 func (f *fakeClient) Get(request rest.Request, dest interface{}) error {
@@ -67,12 +80,12 @@ func (f *fakeClient) Post(request rest.Request) error {
 
 	body, err := request.GetJSONBody()
 	if err != nil {
-		return fmt.Errorf("unable get request body")
+		return errors.New("unable get request body")
 	}
 
 	var entry dnsEntryWrapper
 	if err := json.Unmarshal(body, &entry); err != nil {
-		return fmt.Errorf("unable to decode request body")
+		return errors.New("unable to decode request body")
 	}
 
 	f.dnsEntries = append(f.dnsEntries, entry.DNSEntry)
@@ -91,12 +104,12 @@ func (f *fakeClient) Delete(request rest.Request) error {
 
 	body, err := request.GetJSONBody()
 	if err != nil {
-		return fmt.Errorf("unable get request body")
+		return errors.New("unable get request body")
 	}
 
 	var entry dnsEntryWrapper
 	if err := json.Unmarshal(body, &entry); err != nil {
-		return fmt.Errorf("unable to decode request body")
+		return errors.New("unable to decode request body")
 	}
 
 	cp := make([]domain.DNSEntry, 0)

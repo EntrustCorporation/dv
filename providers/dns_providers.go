@@ -12,6 +12,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/auroradns"
 	"github.com/entrustcorporation/dv/providers/autodns"
 	"github.com/entrustcorporation/dv/providers/azure"
+	"github.com/entrustcorporation/dv/providers/azuredns"
 	"github.com/entrustcorporation/dv/providers/bindman"
 	"github.com/entrustcorporation/dv/providers/bluecat"
 	"github.com/entrustcorporation/dv/providers/brandit"
@@ -21,9 +22,11 @@ import (
 	"github.com/entrustcorporation/dv/providers/clouddns"
 	"github.com/entrustcorporation/dv/providers/cloudflare"
 	"github.com/entrustcorporation/dv/providers/cloudns"
+	"github.com/entrustcorporation/dv/providers/cloudru"
 	"github.com/entrustcorporation/dv/providers/cloudxns"
 	"github.com/entrustcorporation/dv/providers/conoha"
 	"github.com/entrustcorporation/dv/providers/constellix"
+	"github.com/entrustcorporation/dv/providers/cpanel"
 	"github.com/entrustcorporation/dv/providers/derak"
 	"github.com/entrustcorporation/dv/providers/desec"
 	"github.com/entrustcorporation/dv/providers/designate"
@@ -40,6 +43,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/dynu"
 	"github.com/entrustcorporation/dv/providers/easydns"
 	"github.com/entrustcorporation/dv/providers/edgedns"
+	"github.com/entrustcorporation/dv/providers/efficientip"
 	"github.com/entrustcorporation/dv/providers/epik"
 	"github.com/entrustcorporation/dv/providers/exec"
 	"github.com/entrustcorporation/dv/providers/exoscale"
@@ -65,6 +69,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/internetbs"
 	"github.com/entrustcorporation/dv/providers/inwx"
 	"github.com/entrustcorporation/dv/providers/ionos"
+	"github.com/entrustcorporation/dv/providers/ipv64"
 	"github.com/entrustcorporation/dv/providers/iwantmyname"
 	"github.com/entrustcorporation/dv/providers/joker"
 	"github.com/entrustcorporation/dv/providers/liara"
@@ -73,6 +78,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/liquidweb"
 	"github.com/entrustcorporation/dv/providers/loopia"
 	"github.com/entrustcorporation/dv/providers/luadns"
+	"github.com/entrustcorporation/dv/providers/metaname"
 	"github.com/entrustcorporation/dv/providers/mydnsjp"
 	"github.com/entrustcorporation/dv/providers/mythicbeasts"
 	"github.com/entrustcorporation/dv/providers/namecheap"
@@ -93,6 +99,7 @@ import (
 	"github.com/entrustcorporation/dv/providers/plesk"
 	"github.com/entrustcorporation/dv/providers/porkbun"
 	"github.com/entrustcorporation/dv/providers/rackspace"
+	"github.com/entrustcorporation/dv/providers/rcodezero"
 	"github.com/entrustcorporation/dv/providers/regru"
 	"github.com/entrustcorporation/dv/providers/rfc2136"
 	"github.com/entrustcorporation/dv/providers/rimuhosting"
@@ -116,9 +123,11 @@ import (
 	"github.com/entrustcorporation/dv/providers/vkcloud"
 	"github.com/entrustcorporation/dv/providers/vscale"
 	"github.com/entrustcorporation/dv/providers/vultr"
+	"github.com/entrustcorporation/dv/providers/webnames"
 	"github.com/entrustcorporation/dv/providers/websupport"
 	"github.com/entrustcorporation/dv/providers/wedos"
 	"github.com/entrustcorporation/dv/providers/yandex"
+	"github.com/entrustcorporation/dv/providers/yandex360"
 	"github.com/entrustcorporation/dv/providers/yandexcloud"
 	"github.com/entrustcorporation/dv/providers/zoneee"
 	"github.com/entrustcorporation/dv/providers/zonomi"
@@ -137,6 +146,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return arvancloud.NewDNSProvider()
 	case "azure":
 		return azure.NewDNSProvider()
+	case "azuredns":
+		return azuredns.NewDNSProvider()
 	case "auroradns":
 		return auroradns.NewDNSProvider()
 	case "autodns":
@@ -159,12 +170,16 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return cloudflare.NewDNSProvider()
 	case "cloudns":
 		return cloudns.NewDNSProvider()
+	case "cloudru":
+		return cloudru.NewDNSProvider()
 	case "cloudxns":
 		return cloudxns.NewDNSProvider()
 	case "conoha":
 		return conoha.NewDNSProvider()
 	case "constellix":
 		return constellix.NewDNSProvider()
+	case "cpanel":
+		return cpanel.NewDNSProvider()
 	case "derak":
 		return derak.NewDNSProvider()
 	case "desec":
@@ -197,6 +212,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return easydns.NewDNSProvider()
 	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5
 		return edgedns.NewDNSProvider()
+	case "efficientip":
+		return efficientip.NewDNSProvider()
 	case "epik":
 		return epik.NewDNSProvider()
 	case "exec":
@@ -247,6 +264,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return inwx.NewDNSProvider()
 	case "ionos":
 		return ionos.NewDNSProvider()
+	case "ipv64":
+		return ipv64.NewDNSProvider()
 	case "iwantmyname":
 		return iwantmyname.NewDNSProvider()
 	case "joker":
@@ -265,6 +284,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return loopia.NewDNSProvider()
 	case "manual":
 		return dns01.NewDNSProviderManual()
+	case "metaname":
+		return metaname.NewDNSProvider()
 	case "mydnsjp":
 		return mydnsjp.NewDNSProvider()
 	case "mythicbeasts":
@@ -305,6 +326,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return porkbun.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
+	case "rcodezero":
+		return rcodezero.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
 	case "rfc2136":
@@ -351,12 +374,16 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
+	case "webnames":
+		return webnames.NewDNSProvider()
 	case "websupport":
 		return websupport.NewDNSProvider()
 	case "wedos":
 		return wedos.NewDNSProvider()
 	case "yandex":
 		return yandex.NewDNSProvider()
+	case "yandex360":
+		return yandex360.NewDNSProvider()
 	case "yandexcloud":
 		return yandexcloud.NewDNSProvider()
 	case "zoneee":
