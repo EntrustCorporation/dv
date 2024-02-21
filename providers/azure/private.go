@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/privatedns/mgmt/privatedns"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/entrustcorporation/dv/dns01"
@@ -118,7 +118,7 @@ func (d *dnsProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	dc := privatedns.NewPrivateZonesClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)

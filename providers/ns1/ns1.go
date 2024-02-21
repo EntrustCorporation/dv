@@ -97,7 +97,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
 		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
 
-		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT", nil, nil)
 		record.TTL = d.config.TTL
 		record.Answers = []*dns.Answer{{Rdata: []string{info.Value}}}
 
@@ -152,12 +152,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zone, _, err := d.client.Zones.Get(authZone)
+	zone, _, err := d.client.Zones.Get(authZone, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get zone [authZone: %q, fqdn: %q]: %w", authZone, fqdn, err)
 	}
