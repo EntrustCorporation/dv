@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/entrustcorporation/dv/providers/internal/errutils"
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
 )
 
 const apiEndpoint = "https://kasapi.kasserver.com/soap/KasApi.php"
